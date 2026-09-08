@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AZK portfolio</title>
+  <meta name="description" content="AZK’s portfolio">
+  <meta name="theme-color" content="#061710">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="assets/img/icons/link.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="ic-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="title-screen" id="title-screen">
+    <canvas class="title-screen__stars" id="title-stars" aria-hidden="true"></canvas>
+    <div class="title-screen__inner">
+      <svg class="title-screen__emblem" viewBox="0 0 100 88" aria-hidden="true">
+        <path class="emblem__tri" style="--d:0s" d="M50 4l23 40H27z"/>
+        <path class="emblem__tri" style="--d:.15s" d="M27 44l23 40H4z"/>
+        <path class="emblem__tri" style="--d:.3s" d="M73 44l23 40H50z"/>
+      </svg>
+      <h1 class="title-screen__logo"><span class="title-screen__name">AZK</span><span class="title-screen__studio">Horizon Productions</span></h1>
+      <button class="press-start btn-fx" id="press-start" data-sfx="enter">Press start</button>
+      <p class="title-screen__hint">Enables music and sound</p>
+    </div>
+  </div>
+
+  <div class="hud">
+    <button class="hud__btn btn-fx" id="toggle-music" aria-pressed="false" data-sfx="select">
+      <img class="hud__icon" src="assets/img/icons/fairy-ocarina.png" alt="" width="32" height="32"><span class="hud__bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Music
+    </button>
+    <button class="hud__btn btn-fx" id="toggle-sfx" aria-pressed="true" data-sfx="select"><img class="hud__icon" src="assets/img/icons/note.png" alt="" width="32" height="32">Sound</button>
+  </div>
+
+  <header class="hero" id="top">
+    <div class="hero__bg" role="img" aria-label="Background artwork" data-parallax></div>
+    <canvas class="hero__fireflies" id="fireflies" aria-hidden="true"></canvas>
+    <div class="hero__content">
+      <p class="hero__eyebrow reveal">Game developer, systems programmer</p>
+      <h1 class="hero__title reveal" data-split>AZK</h1>
+      <p class="hero__sub reveal">Building the best games with @Horizon Productions</p>
+      <div class="hero__cta reveal">
+        <a class="btn btn-fx" href="#quests" data-sfx="select">Open quest log</a>
+        <a class="btn btn--ghost btn-fx" href="#contact" data-sfx="select">Save &amp; contact</a>
+      </div>
+    </div>
+    <a class="hero__scroll" href="#quests" aria-label="Scroll to quests" data-sfx="select"><span></span></a>
+  </header>
+
+  <nav class="subscreen" aria-label="Sections">
+    <ul class="subscreen__list" id="menu">
+      <li><a href="#quests" data-sfx="select">Quests</a></li>
+      <li><a href="#equipment" data-sfx="select">Equipment</a></li>
+      <li><a href="#map" data-sfx="select">Map</a></li>
+      <li><a href="#contact" data-sfx="select">Save</a></li>
+      <li class="subscreen__cursor" id="menu-cursor" aria-hidden="true"></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section class="panel reveal" id="quests">
+      <div class="panel__head">
+        <h2 class="panel__title">Quests</h2>
+        <p class="panel__lead">Here are my projects</p>
+      </div>
+
+      <div class="rgrid">
+        <article class="rcard" data-roblox="https://www.roblox.com/games/140472728510165/Anime-Arise-Simulator">
+        </article>
+        <article class="rcard" data-roblox="https://www.roblox.com/games/127519525950247/Manhwa-Legends">
+        </article>
+        <article class="rcard rcard--locked" aria-label="Locked quest">
+          <div class="rcard__lock">
+            <img class="rcard__lock-mark" src="assets/img/icons/boss-key.png" alt="" width="32" height="32">
+            <h3>Coming soon</h3>
+            <p>???</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="quest-log">
+        <article class="quest">
+          <div class="quest__thumb quest__thumb--icon" aria-hidden="true"><img src="assets/img/icons/golden-gauntlets.png" alt="" width="32" height="32"></div>
+          <div class="quest__body">
+            <h3>Low-level side quest</h3>
+            <p>heres some off-roblox stuff!</p>
+            <p class="quest__meta">C, x86 assembly and just general low level</p>
+            <a class="quest__link btn-fx" href="https://github.com/REALAZK/" data-sfx="leave">View on GitHub</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel reveal" id="equipment">
+      <div class="panel__head">
+        <h2 class="panel__title">Equipment</h2>
+        <p class="panel__lead">Tools I carry. Click one to equip it.</p>
+      </div>
+      <ul class="gear" id="gear">
+        <li class="gear__item" tabindex="0" style="--i:0">
+          <span class="gear__icon"><img src="assets/img/icons/master-sword.png" alt="" width="32" height="32"></span>
+          <span class="gear__name">Luau / rbx-ts</span>
+          <span class="gear__desc">Roblox systems, networking, unique features, etc</span>
+        </li>
+        <li class="gear__item" tabindex="0" style="--i:1">
+          <span class="gear__icon"><img src="assets/img/icons/hylian-shield.png" alt="" width="32" height="32"></span>
+          <span class="gear__name">C</span>
+          <span class="gear__desc">Firmware and low level drivers</span>
+        </li>
+        <li class="gear__item" tabindex="0" style="--i:2">
+          <span class="gear__icon"><img src="assets/img/icons/megaton-hammer.png" alt="" width="32" height="32"></span>
+          <span class="gear__name">Assembly</span>
+          <span class="gear__desc">x86</span>
+        </li>
+        <li class="gear__item" tabindex="0" style="--i:3">
+          <span class="gear__icon"><img src="assets/img/icons/lens-of-truth.png" alt="" width="32" height="32"></span>
+          <span class="gear__name">Hypervisors</span>
+          <span class="gear__desc">VMX, AMD-V (soon)</span>
+        </li>
+        <li class="gear__item" tabindex="0" style="--i:4">
+          <span class="gear__icon"><img src="assets/img/icons/hookshot.png" alt="" width="32" height="32"></span>
+          <span class="gear__name">Git / GitHub</span>
+          <span class="gear__desc">REALAZK</span>
+        </li>
+        <li class="gear__item" tabindex="0" style="--i:5">
+          <span class="gear__icon"><img src="assets/img/icons/ocarina-of-time.png" alt="" width="32" height="32"></span>
+          <span class="gear__name">Web</span>
+          <span class="gear__desc">HTML, CSS, JS, this site</span>
+        </li>
+        <li class="gear__item gear__item--empty" aria-hidden="true"></li>
+      </ul>
+      <p class="gear__equipped" id="equipped" aria-live="polite">Nothing equipped.</p>
+    </section>
+
+    <section class="panel reveal" id="map">
+      <div class="panel__head">
+        <h2 class="panel__title">Map</h2>
+        <p class="panel__lead">my rough trajectory:</p>
+      </div>
+      <ol class="route">
+        <li class="route__node reveal">
+          <span class="route__pin" aria-hidden="true"></span>
+          <strong>Horizon Productions</strong>
+          <span>lead developer at horizon productions</span>
+        </li>
+        <li class="route__node reveal">
+          <span class="route__pin" aria-hidden="true"></span>
+          <strong>Low-level work</strong>
+          <span>Learned assembly x86, C, and rustc</span>
+        </li>
+        <li class="route__node route__node--next reveal">
+          <span class="route__pin" aria-hidden="true"></span>
+          <strong>Next</strong>
+          <span>whatever the future holds??</span>
+        </li>
+      </ol>
+    </section>
+
+    <section class="panel reveal" id="contact">
+      <div class="panel__head">
+        <h2 class="panel__title">Save</h2>
+        <p class="panel__lead">Get in touch.</p>
+      </div>
+      <ul class="links">
+        <li><a class="btn-fx" href="https://github.com/REALAZK" data-sfx="leave">GitHub</a></li>
+        <li><a class="btn-fx" href="mailto:arthurzachoskenny@gmail.com" data-sfx="leave">Email</a></li>
+        <li><a class="btn-fx" href="https://www.roblox.com/users/1071163813/profile" target="_blank" rel="noopener" data-sfx="leave">Roblox profile</a></li>
+        <li><a class="btn-fx" href="https://x.com/AZKDevs" target="_blank" rel="noopener" data-sfx="leave">X account</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© 2026 AZK. (This is a fan site, rights to nintendo)</p>
+  </footer>
+
+  <audio id="bgm" src="assets/audio/bgm.mp3" loop preload="none"></audio>
+
+  <script src="data/games.js"></script>
+  <script src="js/main.js" defer></script>
+</body>
+</html>
