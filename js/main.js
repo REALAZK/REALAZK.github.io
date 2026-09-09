@@ -398,10 +398,11 @@ addEventListener("resize", () => moveCursor($(".subscreen__list a.is-active")), 
     card.querySelectorAll(":scope > :not(.rcard__note)").forEach((n) => n.remove());
     card.classList.remove("is-loading");
     card.classList.add("is-ready");
+    if (g.universeId) card.dataset.universe = g.universeId;
     card.insertAdjacentHTML("afterbegin", `
       <div class="rcard__body">
         <div class="rcard__thumb">
-          ${g.playing != null ? `<span class="rcard__live">${fmt(g.playing)} playing</span>` : ""}
+          <span class="rcard__live" data-field="playing"${g.playing == null ? " hidden" : ""}>${fmt(g.playing ?? 0)} playing</span>
           ${g.thumbnail ? `<img src="${esc(g.thumbnail)}" alt="" loading="lazy" decoding="async">` : ""}
         </div>
         <div class="rcard__head">
@@ -409,11 +410,11 @@ addEventListener("resize", () => moveCursor($(".subscreen__list a.is-active")), 
           <h3 class="rcard__title">${esc(g.name)}<span class="rcard__creator">by ${esc(g.creator)}</span></h3>
         </div>
         <div class="rcard__stats">
-          <div class="rcard__stat"><b><img src="assets/img/icons/rupee.png" alt="" width="32" height="32"><span data-count="${g.visits ?? 0}">0</span></b><small>visits</small></div>
-          <div class="rcard__stat"><b><img src="assets/img/icons/heart-piece.png" alt="" width="32" height="32"><span data-count="${g.favorites ?? 0}">0</span></b><small>favorites</small></div>
-          <div class="rcard__stat"><b><img src="assets/img/icons/gold-skulltula.png" alt="" width="32" height="32">${pct == null ? "–" : pct + "%"}</b><small>${fmt(g.upVotes)} likes</small></div>
+          <div class="rcard__stat"><b><img src="assets/img/icons/rupee.png" alt="" width="32" height="32"><span data-count="${g.visits ?? 0}" data-field="visits">0</span></b><small>visits</small></div>
+          <div class="rcard__stat"><b><img src="assets/img/icons/heart-piece.png" alt="" width="32" height="32"><span data-count="${g.favorites ?? 0}" data-field="favorites">0</span></b><small>favorites</small></div>
+          <div class="rcard__stat"><b><img src="assets/img/icons/gold-skulltula.png" alt="" width="32" height="32"><span data-field="rating">${pct == null ? "–" : pct + "%"}</span></b><small><span data-field="likes">${fmt(g.upVotes)}</span> likes</small></div>
         </div>
-        <div class="rcard__rating" aria-hidden="true"><i style="--pct:${pct ?? 0}%"></i></div>
+        <div class="rcard__rating" aria-hidden="true"><i data-field="bar" style="--pct:${pct ?? 0}%"></i></div>
         <p class="rcard__desc">${esc(g.description).split("\n")[0]}</p>
         <div class="rcard__foot">
           <a class="rcard__play btn-fx" href="${esc(g.url)}" target="_blank" rel="noopener" data-sfx="leave"><svg><use href="#ic-play"/></svg>Play</a>
@@ -448,31 +449,26 @@ addEventListener("resize", () => moveCursor($(".subscreen__list a.is-active")), 
     io.observe(card);
   }
 
-  const PROXIES = [
-    (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-    (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
-  ];
-  async function viaProxy(url, signal) {
-    let lastErr;
-    for (const p of PROXIES) {
-      try {
-        const r = await fetch(p(url), { signal });
-        if (!r.ok) throw new Error(r.status);
-        return await r.json();
-      } catch (e) { lastErr = e; }
-    }
-    throw lastErr || new Error("no proxy");
+  const RP = {
+    apis: "https://apis.roproxy.com",
+    games: "https://games.roproxy.com",
+    thumbs: "https://thumbnails.roproxy.com",
+  };
+  async function getJson(url, signal) {
+    const r = await fetch(url, { signal });
+    if (!r.ok) throw new Error(r.status);
+    return r.json();
   }
   async function fetchLive(placeId) {
     const ac = new AbortController();
-    const timer = setTimeout(() => ac.abort(), 7000);
+    const timer = setTimeout(() => ac.abort(), 8000);
     try {
-      const { universeId } = await viaProxy(`https://apis.roblox.com/universes/v1/places/${placeId}/universe`, ac.signal);
+      const { universeId } = await getJson(`${RP.apis}/universes/v1/places/${placeId}/universe`, ac.signal);
       const [games, votes, icons, thumbs] = await Promise.all([
-        viaProxy(`https://games.roblox.com/v1/games?universeIds=${universeId}`, ac.signal),
-        viaProxy(`https://games.roblox.com/v1/games/votes?universeIds=${universeId}`, ac.signal),
-        viaProxy(`https://thumbnails.roblox.com/v1/games/icons?universeIds=${universeId}&size=512x512&format=Png&isCircular=false`, ac.signal),
-        viaProxy(`https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=${universeId}&size=768x432&format=Png&countPerUniverse=1`, ac.signal),
+        getJson(`${RP.games}/v1/games?universeIds=${universeId}`, ac.signal),
+        getJson(`${RP.games}/v1/games/votes?universeIds=${universeId}`, ac.signal).catch(() => ({ data: [] })),
+        getJson(`${RP.thumbs}/v1/games/icons?universeIds=${universeId}&size=512x512&format=Png&isCircular=false`, ac.signal).catch(() => ({ data: [] })),
+        getJson(`${RP.thumbs}/v1/games/multiget/thumbnails?universeIds=${universeId}&size=768x432&format=Png&countPerUniverse=1`, ac.signal).catch(() => ({ data: [] })),
       ]);
       const g = games.data[0], v = votes.data[0] || {};
       return {
@@ -485,13 +481,81 @@ addEventListener("resize", () => moveCursor($(".subscreen__list a.is-active")), 
     } finally { clearTimeout(timer); }
   }
 
+  function setVotes(card, up, down) {
+    if (up == null || down == null) return;
+    const total = up + down;
+    const pct = total ? Math.round((up / total) * 100) : null;
+    setField(card, "rating", pct == null ? "–" : pct + "%");
+    setField(card, "likes", up);
+    const bar = $('[data-field="bar"]', card);
+    if (bar) bar.style.setProperty("--pct", `${pct ?? 0}%`);
+  }
+  function setField(card, field, value) {
+    const el = $(`[data-field="${field}"]`, card);
+    if (!el || value == null) return;
+    const text = field === "playing" ? `${fmt(value)} playing` : typeof value === "number" ? fmt(value) : String(value);
+    if (el.dataset.count != null) el.dataset.count = value;
+    if (el.textContent === text) return;
+    el.textContent = text;
+    el.hidden = false;
+    el.classList.remove("is-tick");
+    void el.offsetWidth;
+    el.classList.add("is-tick");
+  }
+
+  const live = { timer: 0, interval: 60000, base: 60000, max: 300000 };
+  async function pollLive() {
+    const ids = $$(".rcard.is-ready[data-universe]").map((c) => c.dataset.universe);
+    if (!ids.length) return;
+    try {
+      const { data } = await getJson(`${RP.games}/v1/games?universeIds=${[...new Set(ids)].join(",")}`);
+      for (const g of data) {
+        for (const card of $$(`.rcard[data-universe="${g.id}"]`)) {
+          setField(card, "playing", g.playing);
+          setField(card, "visits", g.visits);
+          setField(card, "favorites", g.favoritedCount);
+        }
+      }
+      live.interval = live.base;
+    } catch {
+      live.interval = Math.min(live.interval * 2, live.max);
+    }
+  }
+  async function refreshSnapshot() {
+    try {
+      const { games } = await getJson(`data/games.json?t=${Date.now()}`);
+      for (const g of Object.values(games)) {
+        for (const card of $$(`.rcard[data-universe="${g.universeId}"]`)) {
+          setField(card, "playing", g.playing);
+          setField(card, "visits", g.visits);
+          setField(card, "favorites", g.favorites);
+          setVotes(card, g.upVotes, g.downVotes);
+        }
+      }
+    } catch {}
+  }
+  function scheduleLive() {
+    clearTimeout(live.timer);
+    if (document.hidden) return;
+    live.timer = setTimeout(async () => { await pollLive(); scheduleLive(); }, live.interval);
+  }
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) clearTimeout(live.timer);
+    else { pollLive(); scheduleLive(); }
+  });
+
+  const jobs = [];
   for (const card of cards) {
     const id = placeIdFrom(card.dataset.roblox);
     if (!id) { renderError(card, "Not a Roblox game link"); continue; }
     if (cache[id]) { render(card, cache[id]); continue; }
     skeleton(card);
-    fetchLive(id)
+    jobs.push(fetchLive(id)
       .then((g) => render(card, g))
-      .catch(() => renderError(card, "Run tools/fetch-roblox.mjs to fill this card"));
+      .catch(() => renderError(card, "Couldn't reach Roblox for this game")));
   }
+  Promise.all(jobs).then(() => {
+    pollLive(); scheduleLive();
+    setInterval(() => { if (!document.hidden) refreshSnapshot(); }, 300000);
+  });
 })();

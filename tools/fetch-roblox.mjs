@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir, access } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -51,6 +51,16 @@ const thumbById = byId(thumbs.data, "universeId");
 
 const imgDir = path.join(root, "assets", "img", "roblox");
 await mkdir(imgDir, { recursive: true });
+const dataDir = path.join(root, "data");
+let prev = {};
+try { prev = JSON.parse(await readFile(path.join(dataDir, "games.json"), "utf8")).games || {}; } catch {}
+const exists = (f) => access(f).then(() => true, () => false);
+async function keepOrDownload(url, file, prevUrl) {
+  if (!url) return false;
+  if (url === prevUrl && await exists(file)) return true;
+  await download(url, file);
+  return true;
+}
 
 const out = {};
 for (const p of placeIds) {
@@ -62,9 +72,9 @@ for (const p of placeIds) {
   let icon = null, thumb = null;
   const iconUrl = iconById[u]?.imageUrl;
   const thumbUrl = thumbById[u]?.thumbnails?.[0]?.imageUrl;
-  try { if (iconUrl) { await download(iconUrl, path.join(imgDir, `${p}-icon.png`)); icon = `assets/img/roblox/${p}-icon.png`; } }
+  try { if (await keepOrDownload(iconUrl, path.join(imgDir, `${p}-icon.png`), prev[p]?.iconUrl)) icon = `assets/img/roblox/${p}-icon.png`; }
   catch (e) { console.warn(`icon failed for ${p}: ${e.message}`); }
-  try { if (thumbUrl) { await download(thumbUrl, path.join(imgDir, `${p}-thumb.png`)); thumb = `assets/img/roblox/${p}-thumb.png`; } }
+  try { if (await keepOrDownload(thumbUrl, path.join(imgDir, `${p}-thumb.png`), prev[p]?.thumbUrl)) thumb = `assets/img/roblox/${p}-thumb.png`; }
   catch (e) { console.warn(`thumbnail failed for ${p}: ${e.message}`); }
 
   out[p] = {
@@ -85,14 +95,15 @@ for (const p of placeIds) {
     downVotes: v.downVotes,
     icon,
     thumbnail: thumb,
+    iconUrl: iconUrl || null,
+    thumbUrl: thumbUrl || null,
     url: `https://www.roblox.com/games/${p}`,
   };
   console.log(`ok  ${p}  ${g.name}`);
 }
 
-const dataDir = path.join(root, "data");
 await mkdir(dataDir, { recursive: true });
-const body = JSON.stringify({ fetchedAt: new Date().toISOString(), games: out }, null, 2);
+const body = JSON.stringify({ games: out }, null, 2);
 
 await writeFile(path.join(dataDir, "games.js"), `window.ROBLOX_GAMES = ${body};\n`);
 await writeFile(path.join(dataDir, "games.json"), body + "\n");

@@ -273,6 +273,9 @@ main { width: min(var(--panel-w), 100%); margin: 0 auto; padding: 1.5rem; }
 }
 .rcard__live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #5ad36f; box-shadow: 0 0 8px #5ad36f; animation: pulse 1.6s ease-in-out infinite; }
 @keyframes pulse { 50% { opacity: .35; } }
+.is-tick { animation: tick .6s var(--ease-out); }
+@keyframes tick { 0% { color: #f3d77a; transform: translateY(-3px); } 100% { color: inherit; transform: none; } }
+.rcard__stat span[data-field] { display: inline-block; }
 
 .rcard__head { display: flex; gap: .8rem; align-items: center; padding: .9rem 1rem 0; margin-top: -2.2rem; position: relative; z-index: 1; }
 .rcard__icon {
