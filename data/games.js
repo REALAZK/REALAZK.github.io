@@ -30,7 +30,7 @@ window.ROBLOX_GAMES = {
       "creator": "Kooku",
       "creatorType": "Group",
       "playing": 0,
-      "visits": 788608,
+      "visits": 788625,
       "favorites": 4780,
       "maxPlayers": 24,
       "genre": "All",
